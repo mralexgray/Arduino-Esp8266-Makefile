@@ -8,7 +8,7 @@ Based on Martin Oldfield [Arduino Makefile](http://www.mjoldfield.com/atelier/20
 
 Clone the repository:
 
-`git clone https://github.com/jorgegarciadev/Esp8266-Arduino-Makefile.git`
+`git clone https://github.com/jorgegarciadev/Arduino-Esp8266-Makefile.git`
 
 Setup the enviroment with:
 
@@ -38,7 +38,7 @@ Makefile para compilar sketches de Arduino para ESP8266 en Liux y OSX. Basado en
 
 Clonar el repositorio:
 
-`git clone https://github.com/jorgegarciadev/Esp8266-Arduino-Makefile.git`
+`git clone https://github.com/jorgegarciadev/Arduino-Esp8266-Makefile.git`
 
 Configurar el entorno:
 
