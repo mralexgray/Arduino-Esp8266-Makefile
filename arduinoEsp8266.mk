@@ -11,7 +11,10 @@ ARDUINO_VARIANT ?= nodemcu
 # path to ESP8266 Arduino extension
 ARDUINO_CORE ?= $(ROOT_DIR)/tools/Arduino-Esp8266
 ARDUINO_VERSION ?= 10605
+# path to Arduino libraries folder
+#ARDUINO_LIB_PATH = /home/jorge/sketchbook/libraries
 #ESPTOOL_VERBOSE ?= -vv
+
 
 BOARDS_TXT  = $(ARDUINO_CORE)/boards.txt
 PARSE_BOARD = $(ROOT_DIR)/tools/ard-parse-boards
@@ -29,7 +32,7 @@ UPLOAD_RESETMETHOD = $(shell $(PARSE_BOARD_CMD) $(ARDUINO_VARIANT) upload.resetm
 UPLOAD_SPEED ?= $(shell $(PARSE_BOARD_CMD) $(ARDUINO_VARIANT) upload.speed)
 
 # sketch-specific
-USER_LIBDIR ?= ./libraries
+USER_LIBDIR ?= ./lib
 
 # path to xtensa compiler
 XTENSA_TOOLCHAIN ?= $(ROOT_DIR)/tools/xtensa-lx106-elf/bin/
@@ -50,9 +53,9 @@ CORE_OBJS = $(addprefix $(BUILD_OUT)/core/, \
 
 #autodetect arduino libs and user libs
 LOCAL_SRCS = $(USER_SRC) $(USER_CXXSRC) $(LIB_INOSRC) $(USER_HSRC) $(USER_HPPSRC)
-ifndef ARDUINO_LIBS
+ifndef ESP8266_LIBS
     # automatically determine included libraries
-    ARDUINO_LIBS = $(sort $(filter $(notdir $(wildcard $(ARDUINO_CORE)/libraries/*)), \
+    ESP8266_LIBS = $(sort $(filter $(notdir $(wildcard $(ARDUINO_CORE)/libraries/*)), \
         $(shell sed -ne 's/^ *\# *include *[<\"]\(.*\)\.h[>\"]/\1/p' $(LOCAL_SRCS))))
 endif
 
@@ -62,13 +65,20 @@ ifndef USER_LIBS
         $(shell sed -ne 's/^ *\# *include *[<\"]\(.*\)\.h[>\"]/\1/p' $(LOCAL_SRCS))))
 endif
 
+ifndef ARDUINO_LIBS
+    # automatically determine included Arduino libraries
+    ARDUINO_LIBS = $(sort $(filter $(notdir $(wildcard $(ARDUINO_LIB_PATH)/*)), \
+    $(shell sed -ne 's/^ *\# *include *[<\"]\(.*\)\.h[>\"]/\1/p' $(LOCAL_SRCS))))
+endif
 
-# arduino libraries
-ALIBDIRS = $(sort $(dir $(wildcard \
-	$(ARDUINO_LIBS:%=$(ARDUINO_CORE)/libraries/%/*.c) \
-	$(ARDUINO_LIBS:%=$(ARDUINO_CORE)/libraries/%/*.cpp) \
-	$(ARDUINO_LIBS:%=$(ARDUINO_CORE)/libraries/%/src/*.c) \
-	$(ARDUINO_LIBS:%=$(ARDUINO_CORE)/libraries/%/src/*.cpp))))
+
+
+# esp8266 libraries
+ELIBDIRS = $(sort $(dir $(wildcard \
+	$(ESP8266_LIBS:%=$(ARDUINO_CORE)/libraries/%/*.c) \
+	$(ESP8266_LIBS:%=$(ARDUINO_CORE)/libraries/%/*.cpp) \
+	$(ESP8266_LIBS:%=$(ARDUINO_CORE)/libraries/%/src/*.c) \
+	$(ESP8266_LIBS:%=$(ARDUINO_CORE)/libraries/%/src/*.cpp))))
 
 # user libraries and sketch code
 ULIBDIRS = $(sort $(dir $(wildcard \
@@ -77,13 +87,21 @@ ULIBDIRS = $(sort $(dir $(wildcard \
 	$(USER_LIBS:%=$(USER_LIBDIR)/%/src/*/*.c) \
 	$(USER_LIBS:%=$(USER_LIBDIR)/%/*.cpp) \
 	$(USER_LIBS:%=$(USER_LIBDIR)/%/src/*/*.cpp) \
-	$(USER_LIBS:%=$(USER_LIBDIR)/%/src/*.cpp)))) 
+	$(USER_LIBS:%=$(USER_LIBDIR)/%/src/*.cpp))))
+# Arduino libraries
+ALIBDIRS = $(sort $(dir $(wildcard \
+	$(ARDUINO_LIBS:%=$(ARDUINO_LIB_PATH)/%/*.c) \
+	$(ARDUINO_LIBS:%=$(ARDUINO_LIB_PATH)/%/*.cpp) \
+	$(ARDUINO_LIBS:%=$(ARDUINO_LIB_PATH)/%/src/*.c) \
+	$(ARDUINO_LIBS:%=$(ARDUINO_LIB_PATH)/%/src/*.cpp))))
 	
 USRCDIRS = .
 # all sources
 LIB_SRC = $(wildcard $(addsuffix /*.c,$(ULIBDIRS))) \
+	$(wildcard $(addsuffix /*.c,$(ELIBDIRS))) \
 	$(wildcard $(addsuffix /*.c,$(ALIBDIRS)))
 LIB_CXXSRC = $(wildcard $(addsuffix /*.cpp,$(ULIBDIRS))) \
+	$(wildcard $(addsuffix /*.cpp,$(ELIBDIRS))) \
 	$(wildcard $(addsuffix /*.cpp,$(ALIBDIRS)))
 
 USER_SRC = $(wildcard $(addsuffix /*.c,$(USRCDIRS)))
@@ -109,8 +127,8 @@ CORE_INC = $(ARDUINO_CORE)/cores/$(ARDUINO_ARCH) \
 	$(ARDUINO_CORE)/variants/$(VARIANT)
 CORE_INC += $(ARDUINO_CORE)/cores/$(ARDUINO_ARCH)/spiffs
 
-INCLUDES = $(CORE_INC:%=-I%) $(ALIBDIRS:%=-I%) $(ULIBDIRS:%=-I%)
-VPATH = . $(CORE_INC) $(ALIBDIRS) $(ULIBDIRS)
+INCLUDES = $(CORE_INC:%=-I%) $(ELIBDIRS:%=-I%) $(ULIBDIRS:%=-I%) $(ALIBDIRS:%=-I%)
+VPATH = . $(CORE_INC) $(ELIBDIRS) $(ULIBDIRS) $(ALIBDIRS)
 
 ASFLAGS = -c -g -x assembler-with-cpp -MMD $(DEFINES)
 
@@ -136,9 +154,9 @@ CAT	= cat
 all: show_variables dirs core libs bin size
 
 show_variables:  
-	$(info [ARDUINO_LIBS] : $(ARDUINO_LIBS)) 
+	$(info [ESP8266_LIBS] : $(ESP8266_LIBS)) 
 	$(info [USER_LIBS] : $(USER_LIBS))
-
+	$(info [ARDUINO_LIBS] : $(ARDUINO_LIBS))
 dirs:
 	@mkdir -p $(BUILD_OUT)
 	@mkdir -p $(BUILD_OUT)/core
