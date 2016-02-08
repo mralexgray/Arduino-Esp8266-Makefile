@@ -12,7 +12,7 @@ ARDUINO_VARIANT ?= nodemcu
 ARDUINO_CORE ?= $(ROOT_DIR)/tools/Arduino-Esp8266
 ARDUINO_VERSION ?= 10605
 # path to Arduino libraries folder
-#ARDUINO_LIB_PATH = /home/jorge/sketchbook/libraries
+ARDUINO_LIB_PATH = /home/jorge/Arduino/libraries
 #ESPTOOL_VERBOSE ?= -vv
 
 
@@ -207,7 +207,7 @@ $(BUILD_OUT)/$(TARGET).elf: core libs
 		-L$(ESPRESSIF_SDK)/ld -T$(ESPRESSIF_SDK)/ld/eagle.flash.4m.ld \
 		-o $@ -Wl,--start-group $(OBJ_FILES) $(BUILD_OUT)/core/core.a \
 		-lm -lgcc -lhal -lphy -lnet80211 -llwip -lwpa -lmain -lpp -lsmartconfig \
-		-lwps -lcrypto \
+		-lwps -lcrypto -laxtls\
 		-Wl,--end-group -L$(BUILD_OUT)
 
 UNAME = $(shell uname)
