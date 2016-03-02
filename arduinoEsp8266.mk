@@ -126,6 +126,8 @@ CORE_INC = $(ARDUINO_CORE)/cores/$(ARDUINO_ARCH) \
 	$(ARDUINO_CORE)/variants/$(ARDUINO_VARIANT) \
 	$(ARDUINO_CORE)/variants/$(VARIANT)
 CORE_INC += $(ARDUINO_CORE)/cores/$(ARDUINO_ARCH)/spiffs
+CORE_INC += $(ARDUINO_CORE)/cores/$(ARDUINO_ARCH)/libb64
+
 
 INCLUDES = $(CORE_INC:%=-I%) $(ELIBDIRS:%=-I%) $(ULIBDIRS:%=-I%) $(ALIBDIRS:%=-I%)
 VPATH = . $(CORE_INC) $(ELIBDIRS) $(ULIBDIRS) $(ALIBDIRS)
@@ -139,7 +141,7 @@ CFLAGS = -c -Os -Wpointer-arith -Wno-implicit-function-declaration -Wl,-EL \
 CXXFLAGS = -c -Os -mlongcalls -mtext-section-literals -fno-exceptions \
 	-fno-rtti -falign-functions=4 -std=c++11 -MMD
 
-LDFLAGS = -nostdlib -Wl,--gc-sections -Wl,--no-check-sections -u call_user_start -Wl,-static -Wl,-wrap,system_restart_local -Wl,-wrap,register_chipv6_phy
+LDFLAGS = -Os -nostdlib -Wl,--gc-sections -Wl,--no-check-sections -u call_user_start -Wl,-static -Wl,-wrap,system_restart_local -Wl,-wrap,register_chipv6_phy
 
 CC := $(XTENSA_TOOLCHAIN)xtensa-lx106-elf-gcc
 CXX := $(XTENSA_TOOLCHAIN)xtensa-lx106-elf-g++
