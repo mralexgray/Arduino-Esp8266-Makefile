@@ -82,6 +82,7 @@ ELIBDIRS = $(sort $(dir $(wildcard \
 
 # user libraries and sketch code
 ULIBDIRS = $(sort $(dir $(wildcard \
+	$(ARDUINO_LIBS:%=$(USER_LIBDIR)/%/*.h) \
 	$(USER_LIBS:%=$(USER_LIBDIR)/%/*.c) \
 	$(USER_LIBS:%=$(USER_LIBDIR)/%/src/*.c) \
 	$(USER_LIBS:%=$(USER_LIBDIR)/%/src/*/*.c) \
@@ -90,6 +91,7 @@ ULIBDIRS = $(sort $(dir $(wildcard \
 	$(USER_LIBS:%=$(USER_LIBDIR)/%/src/*.cpp))))
 # Arduino libraries
 ALIBDIRS = $(sort $(dir $(wildcard \
+	$(ARDUINO_LIBS:%=$(ARDUINO_LIB_PATH)/%/*.h) \
 	$(ARDUINO_LIBS:%=$(ARDUINO_LIB_PATH)/%/*.c) \
 	$(ARDUINO_LIBS:%=$(ARDUINO_LIB_PATH)/%/*.cpp) \
 	$(ARDUINO_LIBS:%=$(ARDUINO_LIB_PATH)/%/src/*.c) \
